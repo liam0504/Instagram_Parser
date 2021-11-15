@@ -97,13 +97,11 @@ class IG_Photo_Parser(tk.Frame):
         self.lbl_Login_Password.grid(row=2, column=0, sticky=tk.NE + tk.SW)
         self.txt_Login_Password.grid(row=2, column=1, columnspan=5, sticky=tk.NE + tk.SW)
 
-        # 爬取的數量
         self.lbl_Num = tk.Label(self, text="Amount", height=1, width=20, font=f)
         self.entry_Num = tk.Entry(self, textvariable=IntVar, width=20, font=f)
         self.lbl_Num.grid(row=3, column=0, sticky=tk.NE + tk.SW)
         self.entry_Num.grid(row=3, column=1, columnspan=5, sticky=tk.NE + tk.SW)
-
-        # 爬取種類的Checkbox(['image', 'video', 'story-image', 'story-video', 'broadcast'])
+        
         self.lbl_Category = tk.Label(self, text="Category", height=1, width=20, font=f)
         self.Category_post_image = BooleanVar()
         self.Category_post_video = BooleanVar()
@@ -129,7 +127,6 @@ class IG_Photo_Parser(tk.Frame):
         self.CheckBtn_Category_story_video.grid(row=4, column=4, sticky=tk.NE + tk.SW)
         self.CheckBtn_Category_broadcast.grid(row=4, column=5, sticky=tk.NE + tk.SW)
 
-        # 指定目標路徑
         self.path = StringVar()
         self.lbl_Directory = tk.Label(self, text="Target_Path", height=1, width=20, font=f)
         self.entry_Directory = tk.Entry(self, textvariable=self.path, width=20, font=f)
@@ -146,7 +143,7 @@ class IG_Photo_Parser(tk.Frame):
         f = tkFont.Font(size=16, family="Times New Roman")
         self.btn_Select_Parser.destroy()
         self.btn_Select_Lottery.destroy()
-        # 抽獎區
+        
         self.lbl_Lottery = tk.Label(self, text="Lottery！", height=1, width=20, font=f)
         self.lbl_Lottery_Url = tk.Label(self, text="Website of Post", height=1, width=20, font=f)
         self.txt_Lottery_Url = tk.Text(self, height=1, width=20, font=f)
@@ -167,11 +164,9 @@ class IG_Photo_Parser(tk.Frame):
         self.entry_Lottery_Num.grid(row=9, column=1, columnspan=5, sticky=tk.NE + tk.SW)
         self.CheckBtn_Duplicate.grid(row=8, column=6)
 
-        # 抽獎按鈕
         self.btn_Lottery = tk.Button(self, text="Draw！", height=1, width=20, font=f, command=self.clickbtnLottery)
         self.btn_Lottery.grid(row=9, column=6, sticky=tk.NE + tk.SW)
 
-        # 抽獎結果
         self.lottery_result = tk.StringVar()
         self.lb_lottery = tk.Listbox(self, listvariable=self.lottery_result)
         self.lb_lottery.grid(row=10, column=1, columnspan=5, sticky=tk.NE + tk.SW)
@@ -186,12 +181,11 @@ class IG_Photo_Parser(tk.Frame):
         try:
             Max_Num_input = int(self.entry_Num.get())
         except:
-            Max_Num_input = 0  # 不限制
+            Max_Num_input = 0 
         Login_Username_input = self.txt_Login_Username.get("1.0", tk.END).strip()
         Login_Password_input = self.txt_Login_Password.get("1.0", tk.END).strip()
         destination_input = self.path.get()
 
-        # 取得要爬取的media_types，若無勾選，則預設全部爬取
         media_types_input = ""
         if self.Category_post_image.get() == True:
             media_types_input += "image"
@@ -232,7 +226,6 @@ class IG_Photo_Parser(tk.Frame):
             parser.print_help()
             raise ValueError(
                 'Must provide only one of the following: username(s) OR a filename containing username(s) OR --followings-input')
-        # 有指定tag和地點的除錯
         if args.tag and args.location:
             parser.print_help()
             raise ValueError('Must provide only one of the following: hashtag OR location')
@@ -243,7 +236,6 @@ class IG_Photo_Parser(tk.Frame):
         if (args.filter_location or args.filter_location_file) and not args.include_location:
             parser.print_help()
             raise ValueError('Location filter needs locations in metadata to filter properly')
-        # 有指定帳號清單
 
         if args.filename:
             args.usernames = InstagramScraper.get_values_from_file(args.filename)
@@ -251,7 +243,6 @@ class IG_Photo_Parser(tk.Frame):
         else:
             args.usernames = [args.username]
 
-        # 有指定地點
         if args.filter_location_file:
             args.filter_locations = InstagramScraper.get_locations_from_file(args.filter_location_file)
         elif args.filter_location:
@@ -267,7 +258,6 @@ class IG_Photo_Parser(tk.Frame):
             global MAX_RETRIES
             MAX_RETRIES = sys.maxsize
 
-        # 從args裡頭取出變數並輸入，創建InstagramScraper物件
         scraper = InstagramScraper(**vars(args))
 
         if args.login_user and args.login_pass:
@@ -305,7 +295,7 @@ class IG_Photo_Parser(tk.Frame):
         soup = BeautifulSoup(r.text, "html.parser")
 
         attr = {"type": "text/javascript"}
-        tag = soup.find("script", attrs=attr, text=re.compile('window\._sharedData'))  # 滿足這個屬性和值得才取出
+        tag = soup.find("script", attrs=attr, text=re.compile('window\._sharedData')) 
 
         revised_tag = tag.string.partition('=')[-1].strip(' ;')
         result = json.loads(revised_tag)
@@ -329,9 +319,8 @@ class IG_Photo_Parser(tk.Frame):
         try:
             Lottery_Num = int(self.entry_Lottery_Num.get())
         except:
-            Lottery_Num = 3  # 預設為3
+            Lottery_Num = 3  
 
-        # 開抽
         withdraw_dict = dict()
         lottery_result_list = []
         for i in range(0, len(withdral_name_list)):
@@ -344,20 +333,19 @@ class IG_Photo_Parser(tk.Frame):
             start = 0
             end = len(withdral_name_list)
             rand_seq = range(start, end)
-            result_index = random.choices(rand_seq, k=Lottery_Num)  # 重置抽樣，有機會抽到相同的元素，
+            result_index = random.choices(rand_seq, k=Lottery_Num)  
             for i in range(0, Lottery_Num):
                 all_comment = ""
                 for comment in withdraw_dict[withdral_name_list[result_index[i]]]:
                     all_comment += comment + "/"
                 lottery_result_list.append("Winner：" + withdral_name_list[result_index[i]] + "；context：" + all_comment[:-1])
 
-        elif self.Bool_Duplicate.get() == False:  # 重複留言不算數，秀出其最後一個留言
+        elif self.Bool_Duplicate.get() == False: 
             result_name_list = random.sample(withdraw_dict.keys(),
-                                             k=Lottery_Num)  # random.sample(rand_seq, k = Lottery_Num)   # 非重置抽樣，不會抽到相同的元素
+                                             k=Lottery_Num)  # random.sample(rand_seq, k = Lottery_Num)  
             for name in result_name_list:
                 lottery_result_list.append("Winner：" + name + "；context：" + withdraw_dict[name][-1])
 
-        # 顯示在listbox上
         for item in lottery_result_list:
             self.lb_lottery.insert("end", item)
 
